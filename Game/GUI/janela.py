@@ -1,5 +1,5 @@
+#files = Game\GUI\janela.py
 import pygame
-
 class Janela:
     def __init__(self, largura, altura, titulo):
         self.largura = largura

@@ -1,28 +1,25 @@
+#file = Game\Game.py
+
 import pygame
-from tkinter import messagebox
 from GUI.janela import Janela
 from GUI.Botoes import Botoes
-import subprocess
+
+from Configurações.main import Configuracoes
+from Inicio.main import Inicio
 
 pygame.init()
 pygame.font.init()
 
+# Definindo estados do jogo
 estado_atual = "Menu"
 tex_btn = ["Inicio", "Configurações", "Saive", "Sair"]
 
 def comand(text):
     global estado_atual
     if text == "Sair":
-        if messagebox.askokcancel("Sair", "Deseja realmente sair?"):
-            janela.fechar()
+        estado_atual = "Sair"
     else:
-        try:
-            # Executa o script principal correspondente ao botão clicado
-            subprocess.run(["python", f"Game/{text}/main.py"], check=True)
-        except FileNotFoundError:
-            print(f"Arquivo não encontrado: Game/{text}/main.py")
-        except subprocess.CalledProcessError as e:
-            print(f"Erro ao executar o script: {e}")
+        estado_atual = text
 
 # Função auxiliar para criar o comando com o texto correto
 def criar_comando(text):
@@ -31,19 +28,38 @@ def criar_comando(text):
 # Inicializa a janela
 janela = Janela(800, 600, "Game")
 
-while True:
-    janela.atualizar()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            janela.fechar()
-            break
+try:
+    while True:
+        janela.atualizar()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                janela.fechar()
+                pygame.quit()
+                exit()
 
-    # Desenha o menu
-    if estado_atual == "Menu":
-        for i in range(4):
-            botao = Botoes(janela.janela, tex_btn[i], 100, 100 + 60 * i, 200, 50, (0, 0, 255), (0, 0, 128), criar_comando(tex_btn[i]))
-            botao.desenhar()
-            botao.executar()
+        # Verifica o estado atual e desenha a tela correspondente
+        if estado_atual == "Menu":
+            #pinta a tela de preto
+            janela.janela.fill((0, 0, 0))
+            for i in range(4):
+                botao = Botoes(janela.janela, tex_btn[i], 100, 100 + 60 * i, 200, 50, (0, 0, 255), (0, 0, 128), criar_comando(tex_btn[i]))
+                botao.desenhar()
+                botao.executar()
 
-    # Atualiza a tela
-    pygame.display.update()
+        elif estado_atual == "Configurações":
+            config = Configuracoes(janela.janela)
+            config.executar()
+            estado_atual = "Menu"  # Volta ao menu principal ao sair das configurações
+
+        elif estado_atual == "Inicio":
+            inicio = Inicio(janela.janela)
+            inicio.executar()
+            estado_atual = "Menu"  # Volta ao menu principal ao sair do início
+
+        # Atualiza a tela
+        pygame.display.update()
+except Exception as e:
+    print(e)
+    janela.fechar()
+    pygame.quit()
+    exit()
