@@ -1,8 +1,8 @@
 import pygame
 
 class Botoes:
-    def __init__(self, janela, texto, x, y, largura, altura, cor, cor_hover, acao):
-        self.janela = janela.janela  # Acessa a superfície da janela
+    def __init__(self, superficie, texto, x, y, largura, altura, cor, cor_hover, acao):
+        self.janela = superficie  # Acessa a superfície diretamente
         self.texto = texto
         self.x = x
         self.y = y
