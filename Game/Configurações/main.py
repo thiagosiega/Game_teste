@@ -1,5 +1,3 @@
-# File= Game\Configurações\main.py
-
 import pygame
 import json
 import os
@@ -40,7 +38,6 @@ class Configuracoes:
 
         # Desenha os botões (Voltar, Salvar, Carregar)
         self.desenhar_botoes()
-
         pygame.display.flip()
 
     def desenhar_botoes(self):
@@ -64,11 +61,13 @@ class Configuracoes:
         os.makedirs(os.path.dirname(FILE_SEIVE), exist_ok=True)
         with open(FILE_SEIVE, "w") as file:
             json.dump(dados, file)
-        #exibe uma mensagem com as opções salvas por 10s
+        
+        # Exibe uma mensagem com as opções salvas por 10s
+        self.janela.fill(self.cor_fundo)
         label = self.fonte.render("Opções salvas com sucesso!", True, self.cor_texto)
         self.janela.blit(label, (100, 500))
         pygame.display.flip()
-        pygame.time.wait(5000)
+        pygame.time.wait(3000)  # Reduzido para 3 segundos para melhor experiência do usuário
 
     def carregar_configuracoes(self):
         FILE_SEIVE = "Game/Saive/Config.json"
@@ -79,15 +78,17 @@ class Configuracoes:
         for key in dados:
             if key in self.opcoes:
                 self.selecao_opcao[key] = dados[key]
-        #exibe uma mensagem com as opções carregadas por 10s
-        tela = dados["Tela"]
-        nivel = dados["Nivel"]
-        fps = dados["FPS"]
+        
+        # Exibe uma mensagem com as opções carregadas por 10s
+        self.janela.fill(self.cor_fundo)
+        tela = dados.get("Tela", "Não definido")
+        nivel = dados.get("Nivel", "Não definido")
+        fps = dados.get("FPS", "Não definido")
 
-        lavel = self.fonte.render(f"Tela: {tela} \nNivel: {nivel} \nFPS: {fps}", True, self.cor_texto)
-        self.janela.blit(lavel, (100, 500))
+        label = self.fonte.render(f"Tela: {tela} \nNivel: {nivel} \nFPS: {fps}", True, self.cor_texto)
+        self.janela.blit(label, (100, 500))
         pygame.display.flip()
-        pygame.time.wait(5000)
+        pygame.time.wait(3000)  # Reduzido para 3 segundos para melhor experiência do usuário
 
     def executar(self):
         running = True

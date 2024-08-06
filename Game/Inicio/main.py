@@ -1,76 +1,123 @@
 import pygame
-import json  # Adicione esta linha
+import os
+import json
+from GUI.Botoes import Botoes
 
 class Inicio:
     def __init__(self, janela):
+        pygame.init()  # Inicialize o pygame
         self.janela = janela
-        self.fonte = pygame.font.SysFont(None, 24)
-        self.cor_texto = (255, 255, 255)
-        self.cor_selecionada = (0, 255, 0)
-        self.opcoes = ["Novo Jogo", "Sair"]
-        self.selecao_opcao = 0  # Inicialize com 0
-        self.seives = []
-    
-    def desenhar_opcoes(self):
-        self.janela.fill((0, 0, 0))
-        pos_x = 100
-        pos_y = 100
-        for i, opcao in enumerate(self.opcoes):
-            cor = self.cor_texto if self.selecao_opcao != i else self.cor_selecionada
-            texto_opcao = self.fonte.render(opcao, True, cor)
-            self.janela.blit(texto_opcao, (pos_x, pos_y + 60 * i))
-        
-        pygame.display.update()  # Atualize a tela após desenhar
-    
-    def Novo_jogo(self, nome):  # Corrigido para receber nome como argumento
-        self.nome = nome
-        self.infor = [
-            "Nome: " + self.nome,
-            "Vida: 100",
-            "Dano: 10",
-            "Defesa: 5",
-            "Capitulo: 1", 
-            "Nivel: 1",
-            "Experiencia: 0",
-            "Texto: 0"
-        ]
-        self.salvar()
+        self.nome = ""
+        self.font = pygame.font.Font(None, 36)
+        self.input_active = False
+        self.comando_ativo = None
+
+    def textos(self):
+        text = ["Escolha um save ou crie um novo"]
+        text_surface = self.font.render(text[0], True, (255, 255, 255))
+        self.janela.janela.blit(text_surface, (100, 100))
+
+    def criar_comando(self, comando):
+        if comando == "Novo":
+            self.janela.janela.fill((0, 0, 0))  # Limpa a tela para entrada do nome
+            self.input_active = True
+            self.comando_ativo = comando
 
     def salvar(self):
-        self.seives.append(self.infor)
-        with open("Game/Saive/Config.json", "w") as file:
-            json.dump(self.seives, file)
+        if self.comando_ativo == "Novo" and self.nome:
+            infor_base = {
+                "Nome": self.nome,
+                "Infor": {
+                    "Vida": 100,
+                    "Mana": 100,
+                    "Capitulo": 1,
+                    "Text": 0,
+                    "Itens": {
+                        "Espada": 1,
+                        "Pocao": 1
+                    }
+                }
+            }
+            FILE_SAVES = "Game/Saive/Saive.json"
+            if os.path.exists(FILE_SAVES):
+                with open(FILE_SAVES, "r", encoding='utf-8') as file:
+                    saves = json.load(file)
+            else:
+                saves = []
+            saves.append(infor_base)
+            with open(FILE_SAVES, "w", encoding='utf-8') as file:
+                json.dump(saves, file, indent=4)
+            self.input_active = False
+            self.comando_ativo = None
 
-    def exibir_seive(self):
-        with open("Game/Saive/Config.json", "r") as file:
-            self.seives = json.load(file)
-        for i, seive in enumerate(self.seives):
-            print(f"Seive {i}")
-            for info in seive:
-                print(info)
-            print()
+    def exibir_saves(self):
+        FILE_SAVES = "Game/Saive/Saive.json"
+        if os.path.exists(FILE_SAVES):
+            with open(FILE_SAVES, "r", encoding='utf-8') as file:
+                saves = json.load(file)
+
+            num_saves_to_display = min(len(saves), 5)
+            for i in range(num_saves_to_display):
+                nome = saves[i].get("Nome", f"Save {i+1}")
+                botao = Botoes(
+                    self.janela.janela,
+                    nome,
+                    100,
+                    200 + 60 * i,
+                    200,
+                    50,
+                    (0, 0, 255),
+                    (0, 0, 128),
+                    lambda nome=nome: self.criar_comando(nome)
+                )
+                botao.desenhar()
+                botao.executar()
+        else:
+            label = self.font.render("Nenhum save encontrado", True, (255, 255, 255))
+            self.janela.janela.blit(label, (100, 200))
+
+    def btn_novo(self):
+        botao = Botoes(
+            self.janela.janela,
+            "Novo",
+            100,
+            300 + 60 * 4,
+            200,
+            50,
+            (0, 0, 255),
+            (0, 0, 128),
+            lambda: self.criar_comando("Novo")
+        )
+        botao.desenhar()
+        botao.executar()
+
+    def atualizar_nome(self, event):
+        if event.key == pygame.K_BACKSPACE:
+            self.nome = self.nome[:-1]
+        elif event.key == pygame.K_RETURN:
+            self.salvar()
+        else:
+            self.nome += event.unicode
 
     def executar(self):
-        try:
-            while True:
-                self.desenhar_opcoes()
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        exit()
-                    elif event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_UP:
-                            self.selecao_opcao = (self.selecao_opcao - 1) % len(self.opcoes)
-                        elif event.key == pygame.K_DOWN:
-                            self.selecao_opcao = (self.selecao_opcao + 1) % len(self.opcoes)
-                        elif event.key == pygame.K_RETURN:
-                            if self.selecao_opcao == 0:
-                                nome = "Jogador"  # Substitua pelo nome real ou obtenha de outra forma
-                                self.Novo_jogo(nome)
-                            elif self.selecao_opcao == 1:
-                                pygame.quit()
-                                exit()
-        except Exception as e:
-            print(e)
-            pygame.quit()
-            exit()
+        clock = pygame.time.Clock()  # Para controlar o FPS
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.KEYDOWN and self.input_active:
+                    self.atualizar_nome(event)
+
+            self.janela.janela.fill((0, 0, 0))  # Preenche a tela com a cor de fundo
+            self.textos()
+            self.exibir_saves()
+            self.btn_novo()
+
+            if self.input_active:
+                nome_surface = self.font.render(self.nome, True, (255, 255, 255))
+                self.janela.janela.blit(nome_surface, (100, 150))
+
+            self.janela.atualizar()  # Atualiza a tela
+            pygame.display.flip()  # Usa flip() para evitar piscar
+            clock.tick(30)  # Limita o FPS para 30

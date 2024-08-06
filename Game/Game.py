@@ -52,9 +52,9 @@ try:
             estado_atual = "Menu"  # Volta ao menu principal ao sair das configurações
 
         elif estado_atual == "Inicio":
-            inicio = Inicio(janela.janela)
-            inicio.executar()
-            estado_atual = "Menu"  # Volta ao menu principal ao sair do início
+            menu_inicio = Inicio(janela)
+            menu_inicio.executar()
+            estado_atual = "Menu"
 
         # Atualiza a tela
         pygame.display.update()
