@@ -29,7 +29,7 @@ class Configuracoes:
 
             if self.estado_expansao[opcao]:
                 for i, valor in enumerate(valores):
-                    cor = self.cor_texto if self.selecao_opcao[opcao] != valor else self.cor_selecionada
+                    cor = self.cor_selecionada if self.selecao_opcao[opcao] == valor else self.cor_texto
                     texto_valor = self.fonte.render(f"- {valor}", True, cor)
                     self.janela.blit(texto_valor, (pos_x + 20, pos_y + (i + 1) * 30))
                 pos_y += len(valores) * 30
@@ -38,10 +38,9 @@ class Configuracoes:
 
         # Desenha os botões (Voltar, Salvar, Carregar)
         self.desenhar_botoes()
-        pygame.display.flip()
+        pygame.display.update()
 
     def desenhar_botoes(self):
-        # Botões
         btns_text = ["Voltar", "Salvar", "Carregar"]
         pos_x = 400
         for i, text in enumerate(btns_text):
@@ -50,36 +49,42 @@ class Configuracoes:
             self.janela.blit(texto, (pos_x, pos_y))
 
     def salvar_opcoes(self):
-        FILE_SEIVE = "Game/Saive/Config.json"
+        FILE_SAVE = "Game/Saive/Config.json"
         dados = {key: self.selecao_opcao[key] for key in self.selecao_opcao if self.selecao_opcao[key] is not None}
         
-        # Verifica se algumas opções não foram selecionadas
         if len(dados) < len(self.opcoes):
             messagebox.showinfo("Atenção", "Algumas opções não foram selecionadas.")
             return
         
-        os.makedirs(os.path.dirname(FILE_SEIVE), exist_ok=True)
-        with open(FILE_SEIVE, "w") as file:
-            json.dump(dados, file)
+        os.makedirs(os.path.dirname(FILE_SAVE), exist_ok=True)
+        try:
+            with open(FILE_SAVE, "w") as file:
+                json.dump(dados, file)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao salvar as opções: {e}")
+            return
         
-        # Exibe uma mensagem com as opções salvas por 10s
         self.janela.fill(self.cor_fundo)
         label = self.fonte.render("Opções salvas com sucesso!", True, self.cor_texto)
         self.janela.blit(label, (100, 500))
-        pygame.display.flip()
-        pygame.time.wait(3000)  # Reduzido para 3 segundos para melhor experiência do usuário
+        pygame.display.update()
+        pygame.time.wait(3000)
 
     def carregar_configuracoes(self):
-        FILE_SEIVE = "Game/Saive/Config.json"
-        if not os.path.exists(FILE_SEIVE):
+        FILE_SAVE = "Game/Saive/Config.json"
+        if not os.path.exists(FILE_SAVE):
             return
-        with open(FILE_SEIVE, "r") as file:
-            dados = json.load(file)
+        try:
+            with open(FILE_SAVE, "r") as file:
+                dados = json.load(file)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao carregar as opções: {e}")
+            return
+
         for key in dados:
             if key in self.opcoes:
                 self.selecao_opcao[key] = dados[key]
         
-        # Exibe uma mensagem com as opções carregadas por 10s
         self.janela.fill(self.cor_fundo)
         tela = dados.get("Tela", "Não definido")
         nivel = dados.get("Nivel", "Não definido")
@@ -87,8 +92,8 @@ class Configuracoes:
 
         label = self.fonte.render(f"Tela: {tela} \nNivel: {nivel} \nFPS: {fps}", True, self.cor_texto)
         self.janela.blit(label, (100, 500))
-        pygame.display.flip()
-        pygame.time.wait(3000)  # Reduzido para 3 segundos para melhor experiência do usuário
+        pygame.display.update()
+        pygame.time.wait(3000)
 
     def executar(self):
         running = True
@@ -118,7 +123,7 @@ class Configuracoes:
 
                     rect_back = pygame.Rect(400, 100, 100, 30)  # Botão Voltar
                     if rect_back.collidepoint(mouse_x, mouse_y):
-                        running = False  # Sai das configurações e volta ao menu
+                        running = False
                     
                     rect_save = pygame.Rect(400, 160, 100, 30)  # Botão Salvar
                     if rect_save.collidepoint(mouse_x, mouse_y):
