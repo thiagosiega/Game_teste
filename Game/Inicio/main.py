@@ -1,6 +1,7 @@
 import pygame
 import json
 import os
+import subprocess
 
 class Inicio:
     def __init__(self, janela):
@@ -55,6 +56,11 @@ class Inicio:
         if os.path.exists(FILE_SAVE):
             with open(FILE_SAVE, "r") as file:
                 dados = json.load(file)
+                # Verificar e corrigir tipos dos dados
+                if isinstance(dados["Capitulo"], str):
+                    dados["Capitulo"] = int(dados["Capitulo"])
+                if isinstance(dados["Tex_vex"], str):
+                    dados["Tex_vex"] = int(dados["Tex_vex"])
                 self.btns[0]["texto"] = f"Continuar: {dados['nome']}"
         else:
             self.btns[0]["texto"] = "Novo Jogo"
@@ -68,15 +74,10 @@ class Inicio:
                 for btn in self.btns:
                     if btn["rect"].collidepoint(event.pos):
                         if btn["texto"].startswith("Continuar"):
-                            """
-                            File_main = "Game/Capitulos/main.py"
-                            #envia os dados do save para o main
                             with open("Game/Save/Save.json", "r") as file:
                                 dados = json.load(file)
-                                estado_atual = "Capitulo"
-                            return False
-                            """
-                            print("Continuar")
+                                # Iniciar o jogo com dados carregados
+                                subprocess.Popen(["python", "Game/Capitulos/main.py", str(dados["Capitulo"]), str(dados["Tex_vex"])])
                         elif btn["texto"] == "Novo Jogo":
                             self.input_ativo = True
                         elif btn["texto"] == "Sair":

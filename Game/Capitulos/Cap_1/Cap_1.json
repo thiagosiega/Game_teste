@@ -1,0 +1,15 @@
+{
+    "Cena_1": {
+      "background": "Game/Capitulos/Cap_1/Cenas/Cena_1.jpg",
+      "dialog": {
+        "text": "Teste de texto"
+      }
+    },
+    "Cena_2": {
+      "background": "Game/Capitulos/Cap_1/Cenas/Cena_2.jpg",
+      "dialog": {
+        "text": "Teste de texto2"
+      }
+    }
+  }
+  
