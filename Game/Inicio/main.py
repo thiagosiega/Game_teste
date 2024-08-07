@@ -41,7 +41,9 @@ class Inicio:
             "nome": self.nome_jogador,
             "vida": 100,
             "mana": 100,
-            "Itens": []
+            "Itens": [],
+            "Capitulo": 1,
+            "Tex_vex": 0
         }
         os.makedirs(os.path.dirname(FILE_SAVE), exist_ok=True)
         with open(FILE_SAVE, "w") as file:
@@ -66,8 +68,15 @@ class Inicio:
                 for btn in self.btns:
                     if btn["rect"].collidepoint(event.pos):
                         if btn["texto"].startswith("Continuar"):
-                            # Logica para continuar jogo
-                            print("Continuar jogo")
+                            """
+                            File_main = "Game/Capitulos/main.py"
+                            #envia os dados do save para o main
+                            with open("Game/Save/Save.json", "r") as file:
+                                dados = json.load(file)
+                                estado_atual = "Capitulo"
+                            return False
+                            """
+                            print("Continuar")
                         elif btn["texto"] == "Novo Jogo":
                             self.input_ativo = True
                         elif btn["texto"] == "Sair":
