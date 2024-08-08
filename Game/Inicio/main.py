@@ -1,7 +1,6 @@
 import pygame
 import json
 import os
-import subprocess
 
 class Inicio:
     def __init__(self, janela):
@@ -12,10 +11,7 @@ class Inicio:
         self.cor_botao = (0, 0, 255)
         self.cor_botao_hover = (0, 0, 180)
         self.fonte = pygame.font.SysFont(None, 24)
-        self.btns = [
-            {"texto": "Novo Jogo", "rect": pygame.Rect(400, 100, 200, 40)},
-            {"texto": "Sair", "rect": pygame.Rect(400, 220, 200, 40)}
-        ]
+        self.btns = []
         self.input_ativo = False
         self.nome_jogador = ""
 
@@ -30,14 +26,14 @@ class Inicio:
             self.janela.blit(texto, (btn["rect"].x + 10, btn["rect"].y + 10))
 
         if self.input_ativo:
-            pygame.draw.rect(self.janela, (200, 200, 200), pygame.Rect(300, 300, 200, 40))
+            pygame.draw.rect(self.janela, (200, 200, 200), pygame.Rect(400, 450, 200, 40))
             texto_entrada = self.fonte.render(self.nome_jogador, True, (0, 0, 0))
-            self.janela.blit(texto_entrada, (310, 310))
+            self.janela.blit(texto_entrada, (400, 460))
             label = self.fonte.render("Digite o nome do jogador:", True, self.cor_texto)
-            self.janela.blit(label, (300, 270))
+            self.janela.blit(label, (400, 400))
 
     def novo_jogo(self):
-        FILE_SAVE = "Game/Save/Save.json"
+        FILE_SAVE = f"Game/Save/{self.nome_jogador}.json"
         dados = {
             "nome": self.nome_jogador,
             "vida": 100,
@@ -47,23 +43,78 @@ class Inicio:
             "Tex_vex": 0
         }
         os.makedirs(os.path.dirname(FILE_SAVE), exist_ok=True)
-        with open(FILE_SAVE, "w") as file:
-            json.dump(dados, file)
-        print("Jogo salvo com sucesso!")
+        try:
+            with open(FILE_SAVE, "w") as file:
+                json.dump(dados, file)
+            print("Jogo salvo com sucesso!")
+        except IOError as e:
+            # Tratar erro de escrita
+            self.janela.fill(self.cor_fundo)
+            label = self.fonte.render("Erro ao salvar o jogo!", True, self.cor_texto)
+            label2 = self.fonte.render("Sem caracteres especiais!", True, self.cor_texto)
+            self.janela.blit(label, (100, 50))
+            self.janela.blit(label2, (100, 100))
+            pygame.display.update()
+            pygame.time.delay(5000)
+            self.janela.fill(self.cor_fundo)
+            self.desenhar_botoes()
+
+    def apagar_save(self):
+        self.janela.fill(self.cor_fundo)
+        label = self.fonte.render("Escolha o save a ser apagado:", True, self.cor_texto)
+        self.janela.blit(label, (100, 50))
+        
+        y_offset = 100
+        file_rects = []
+        for file in os.listdir("Game/Save"):
+            if file.endswith(".json"):
+                with open(os.path.join("Game/Save", file), "r") as f:
+                    dados = json.load(f)
+                    btn = pygame.Rect(100, y_offset, 200, 40)
+                    pygame.draw.rect(self.janela, self.cor_botao, btn)
+                    texto = self.fonte.render(f"{dados['nome']}", True, self.cor_texto)
+                    self.janela.blit(texto, (btn.x + 10, btn.y + 10))
+                    file_rects.append((btn, os.path.join("Game/Save", file)))
+                    y_offset += 60
+
+        pygame.display.update()
+        
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return False
+
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    for rect, filepath in file_rects:
+                        if rect.collidepoint(pygame.mouse.get_pos()):
+                            os.remove(filepath)
+                            self.carregar_save()
+                            return True  # Retorna para o loop principal
+
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        return True  # Retorna ao menu principal
+
+            pygame.display.update()
+
 
     def carregar_save(self):
-        FILE_SAVE = "Game/Save/Save.json"
-        if os.path.exists(FILE_SAVE):
-            with open(FILE_SAVE, "r") as file:
-                dados = json.load(file)
-                # Verificar e corrigir tipos dos dados
-                if isinstance(dados["Capitulo"], str):
-                    dados["Capitulo"] = int(dados["Capitulo"])
-                if isinstance(dados["Tex_vex"], str):
-                    dados["Tex_vex"] = int(dados["Tex_vex"])
-                self.btns[0]["texto"] = f"Continuar: {dados['nome']}"
-        else:
-            self.btns[0]["texto"] = "Novo Jogo"
+        self.janela.fill(self.cor_fundo)
+        FILE_SAVE = "Game/Save/"
+        if not os.path.exists(FILE_SAVE):
+            os.makedirs(FILE_SAVE)
+        self.btns = [
+            {"texto": "Novo Jogo", "rect": pygame.Rect(400, 100, 200, 40)},
+            {"texto": "Sair", "rect": pygame.Rect(400, 220, 200, 40)},
+            {"texto": "Apagar", "rect": pygame.Rect(400, 340, 200, 40)}
+        ]
+        y_offset = 50
+        for file in os.listdir(FILE_SAVE):
+            if file.endswith(".json"):
+                with open(os.path.join(FILE_SAVE, file), "r") as f:
+                    dados = json.load(f)
+                    self.btns.append({"texto": f"Continuar - {dados['nome']}", "rect": pygame.Rect(100, y_offset, 200, 40)})
+                    y_offset += 60
 
     def lidar_com_eventos(self):
         for event in pygame.event.get():
@@ -72,14 +123,14 @@ class Inicio:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for btn in self.btns:
-                    if btn["rect"].collidepoint(event.pos):
-                        if btn["texto"].startswith("Continuar"):
-                            with open("Game/Save/Save.json", "r") as file:
-                                dados = json.load(file)
-                                # Iniciar o jogo com dados carregados
-                                subprocess.Popen(["python", "Game/Capitulos/main.py", str(dados["Capitulo"]), str(dados["Tex_vex"])])
-                        elif btn["texto"] == "Novo Jogo":
+                    if btn["rect"].collidepoint(pygame.mouse.get_pos()):
+                        if btn["texto"] == "Novo Jogo":
                             self.input_ativo = True
+                        elif btn["texto"].startswith("Continuar"):
+                            print("Continuar")
+                        elif btn["texto"] == "Apagar":
+                            if self.apagar_save() is False:
+                                return False
                         elif btn["texto"] == "Sair":
                             return False
 
@@ -90,18 +141,21 @@ class Inicio:
                             self.novo_jogo()
                             self.input_ativo = False
                             self.nome_jogador = ""
-                            self.carregar_save()  # Atualizar o texto do botão após salvar
+                            self.carregar_save()
                         else:
                             print("Nome do jogador não pode estar vazio!")
                     elif event.key == pygame.K_BACKSPACE:
                         self.nome_jogador = self.nome_jogador[:-1]
+                    elif event.key == pygame.K_ESCAPE:
+                        self.input_ativo = False
                     else:
-                        if len(self.nome_jogador) < 20:  # Limite de caracteres
+                        if len(self.nome_jogador) < 20:
                             self.nome_jogador += event.unicode
 
         return True
 
     def executar(self):
+        clock = pygame.time.Clock()  # Controle de taxa de atualização
         running = True
         while running:
             self.janela.fill(self.cor_fundo)
@@ -109,3 +163,4 @@ class Inicio:
             if not self.lidar_com_eventos():
                 break
             pygame.display.update()
+            clock.tick(60)  # Atualiza a 60 FPS
