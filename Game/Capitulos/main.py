@@ -20,24 +20,53 @@ class Janela:
         """Desenha o conteúdo da janela."""
         if self.background_image:
             self.screen.blit(self.background_image, (0, 0))
-        # Desenha a caixa de texto com o texto dentro dela
+
         if self.dialog_text:
-            self.desenha_caixa_texto(*self.text_box_position, (0, 0, 0), (255, 255, 255), self.dialog_text, (255, 255, 255))
+            self.desenha_caixa_texto(self.dialog_text)
 
-    def desenha_caixa_texto(self, x, y, cor_fundo, cor_borda, texto, cor_texto):
+    def desenha_caixa_texto(self, texto):
         """Desenha uma caixa de texto com um texto fixo na tela."""
-        altura = 40
-        largura = 200
         fonte = pygame.font.SysFont(None, 32)
+        
+        # Limites
+        MAX_WIDTH = self.screen.get_width() - 20  # Margem
+        MAX_HEIGHT = 100
 
-        # Desenhar a caixa de texto
-        pygame.draw.rect(self.screen, cor_fundo, (x, y, largura, altura))
-        pygame.draw.rect(self.screen, cor_borda, (x, y, largura, altura), 2)
+        # Quebra o texto em linhas que cabem na largura máxima
+        words = texto.split(' ')
+        lines = []
+        current_line = ''
+        for word in words:
+            test_line = current_line + word + ' '
+            if fonte.size(test_line)[0] > MAX_WIDTH:
+                lines.append(current_line)
+                current_line = word + ' '
+            else:
+                current_line = test_line
+        lines.append(current_line)
+
+        # Verifica se o texto excede a altura máxima
+        if len(lines) * fonte.get_height() > MAX_HEIGHT:
+            lines = lines[:MAX_HEIGHT // fonte.get_height()]
+
+        # Calcula a posição da caixa de texto
+        screen_size = self.screen.get_size()
+        largura_caixa = MAX_WIDTH + 20  # Adiciona padding
+        altura_caixa = min(len(lines) * fonte.get_height() + 20, MAX_HEIGHT)  # Adiciona padding e limita a altura
+
+        x = (screen_size[0] - largura_caixa) // 2
+        y = screen_size[1] - altura_caixa - 10  # Ajuste a posição vertical
+
+        # Desenha a caixa de texto
+        pygame.draw.rect(self.screen, (255, 255, 255), (x, y, largura_caixa, altura_caixa))
+        pygame.draw.rect(self.screen, (0, 0, 0), (x, y, largura_caixa, altura_caixa), 2)
 
         # Desenhar o texto dentro da caixa de texto
-        text_surface = fonte.render(texto, True, cor_texto)
-        self.screen.blit(text_surface, (x + 5, y + 5))
-
+        y_offset = y + 10
+        for line in lines:
+            text_surface = fonte.render(line, True, (0, 0, 0))
+            self.screen.blit(text_surface, (x + 10, y_offset))
+            y_offset += fonte.get_height()
 
 def load_config():
     """Carrega as configurações do arquivo JSON ou usa as configurações padrão."""
@@ -48,12 +77,10 @@ def load_config():
         "FPS": "30"
     }
     if os.path.exists(FILE_CONFIG):
-        with open(FILE_CONFIG, "r") as file:
+        with open(FILE_CONFIG, "r", encoding='utf-8') as file:
             config = json.load(file)
     else:
-        config = DEFAULT_SETTINGS
-        with open(FILE_CONFIG, "w") as file:
-            json.dump(config, file)
+        print(f"Arquivo de configuração não encontrado: {FILE_CONFIG}")
     return config
 
 def get_screen_size(tela_config):
@@ -69,14 +96,21 @@ def load_scene(scene_name):
     if not os.path.exists(file_script):
         print(f"Arquivo da cena não encontrado: {file_script}")
         return {}
-    with open(file_script, "r") as file:
-        scenes = json.load(file)
-        return scenes.get(scene_name, {})
+    try:
+        with open(file_script, "r", encoding='utf-8') as file:
+            scenes = json.load(file)
+            return scenes.get(scene_name, {})
+    except json.JSONDecodeError as e:
+        print(f"Erro ao decodificar o JSON: {e}")
+        return {}
+    except IOError as e:
+        print(f"Erro ao abrir o arquivo: {e}")
+        return {}
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("Número incorreto de argumentos!")
-        print("Uso: python main.py <Capitulo> <Tex_vex>")
+        print("Uso: python main.py <Capitulo> <Cena> <Nome>")
         return
 
     pygame.init()
@@ -86,9 +120,7 @@ def main():
         screen_size = get_screen_size(config["Tela"])
 
         janela = Janela(screen_size, f"Capitulo {sys.argv[1]}")
-        
-        # Carregar a cena inicial
-        scene_name = "Cena_1"  # Você pode mudar isso conforme necessário
+        scene_name = f"Cena_{sys.argv[2]}"
         scene = load_scene(scene_name)
         if scene:
             background_path = scene.get("background")
@@ -120,7 +152,8 @@ def main():
                                 print(f"Erro ao carregar a imagem: {e}")
                                 janela.background_image = None
                         janela.dialog_text = scene.get("dialog", {}).get("text", "")
-
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    return
             janela.update()
             janela.draw()
             pygame.display.flip()

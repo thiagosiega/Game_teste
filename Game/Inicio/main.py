@@ -1,6 +1,7 @@
 import pygame
 import json
 import os
+import subprocess
 
 class Inicio:
     def __init__(self, janela):
@@ -14,6 +15,7 @@ class Inicio:
         self.btns = []
         self.input_ativo = False
         self.nome_jogador = ""
+        self.arquivo_salvo = None
 
         # Carregar configurações de save
         self.carregar_save()
@@ -26,11 +28,11 @@ class Inicio:
             self.janela.blit(texto, (btn["rect"].x + 10, btn["rect"].y + 10))
 
         if self.input_ativo:
-            pygame.draw.rect(self.janela, (200, 200, 200), pygame.Rect(400, 450, 200, 40))
+            pygame.draw.rect(self.janela, (200, 200, 200), pygame.Rect(300, 300, 200, 40))
             texto_entrada = self.fonte.render(self.nome_jogador, True, (0, 0, 0))
-            self.janela.blit(texto_entrada, (400, 460))
+            self.janela.blit(texto_entrada, (310, 310))
             label = self.fonte.render("Digite o nome do jogador:", True, self.cor_texto)
-            self.janela.blit(label, (400, 400))
+            self.janela.blit(label, (300, 270))
 
     def novo_jogo(self):
         FILE_SAVE = f"Game/Save/{self.nome_jogador}.json"
@@ -40,7 +42,7 @@ class Inicio:
             "mana": 100,
             "Itens": [],
             "Capitulo": 1,
-            "Tex_vex": 0
+            "Tex_vex": 1
         }
         os.makedirs(os.path.dirname(FILE_SAVE), exist_ok=True)
         try:
@@ -48,16 +50,7 @@ class Inicio:
                 json.dump(dados, file)
             print("Jogo salvo com sucesso!")
         except IOError as e:
-            # Tratar erro de escrita
-            self.janela.fill(self.cor_fundo)
-            label = self.fonte.render("Erro ao salvar o jogo!", True, self.cor_texto)
-            label2 = self.fonte.render("Sem caracteres especiais!", True, self.cor_texto)
-            self.janela.blit(label, (100, 50))
-            self.janela.blit(label2, (100, 100))
-            pygame.display.update()
-            pygame.time.delay(5000)
-            self.janela.fill(self.cor_fundo)
-            self.desenhar_botoes()
+            print(f"Erro ao salvar o jogo: {e}")
 
     def apagar_save(self):
         self.janela.fill(self.cor_fundo)
@@ -95,8 +88,7 @@ class Inicio:
                     if event.key == pygame.K_ESCAPE:
                         return True  # Retorna ao menu principal
 
-            pygame.display.update()
-
+        pygame.display.update()
 
     def carregar_save(self):
         self.janela.fill(self.cor_fundo)
@@ -113,8 +105,24 @@ class Inicio:
             if file.endswith(".json"):
                 with open(os.path.join(FILE_SAVE, file), "r") as f:
                     dados = json.load(f)
-                    self.btns.append({"texto": f"Continuar - {dados['nome']}", "rect": pygame.Rect(100, y_offset, 200, 40)})
+                    self.btns.append({
+                        "texto": f"Continuar - {dados['nome']}",
+                        "rect": pygame.Rect(100, y_offset, 200, 40),
+                        "arquivo": os.path.join(FILE_SAVE, file)
+                    })
                     y_offset += 60
+
+    def continuar_jogo(self, arquivo_salvo):
+        self.arquivo_salvo = arquivo_salvo
+        #le o arquivo
+        with open(arquivo_salvo, "r") as file:
+            dados = json.load(file)
+            capitulo = dados["Capitulo"]
+            tex_vex = dados["Tex_vex"]
+            nome = dados["nome"]
+            print(f"Continuando o jogo de {nome} no capítulo {capitulo} com {tex_vex} tex_vex")
+            subprocess.run(["python", "Game/Capitulos/main.py", str(capitulo), str(tex_vex), nome])
+
 
     def lidar_com_eventos(self):
         for event in pygame.event.get():
@@ -127,7 +135,7 @@ class Inicio:
                         if btn["texto"] == "Novo Jogo":
                             self.input_ativo = True
                         elif btn["texto"].startswith("Continuar"):
-                            print("Continuar")
+                            self.continuar_jogo(btn.get("arquivo"))
                         elif btn["texto"] == "Apagar":
                             if self.apagar_save() is False:
                                 return False
