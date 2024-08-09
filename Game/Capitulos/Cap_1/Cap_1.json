@@ -16,6 +16,18 @@
       "dialog": {
         "text": "Conta-se que por volta do ano 250 A.C, na China antiga, um príncipe da região norte do país, estava às vésperas de ser coroado imperador, mas, de acordo com a lei, ele deveria se casar. Sabendo disso, ele resolveu fazer uma “disputa” entre as moças da corte ou quem quer que se achasse digna de sua proposta.\n\nNo dia seguinte, o príncipe anunciou que receberia, numa celebração especial, todas as pretendentes e lançaria um desafio. Uma velha senhora, serva do palácio há muitos anos, ouvindo os comentários sobre os preparativos, sentiu uma leve tristeza, pois sabia que sua jovem filha nutria um sentimento de profundo amor pelo príncipe.\n\nAo chegar em casa e relatar o fato a jovem, espantou-se ao saber que ela pretendia ir à celebração, e indagou incrédula:\n\n– Minha filha, o que você fará lá? Estarão presentes todas as mais belas e ricas moças da corte. Tire esta ideia insensata da cabeça; eu sei que você deve estar sofrendo, mas não torne o sofrimento uma loucura."
       }
+    },
+    "Cena_4": {
+      "background": "Game/Capitulos/Cap_1/Cenas/Cena_1.jpg",
+      "dialog": {
+        "text": "Teste de texto4"
+      }
+    },
+    "Cena_5":{
+      "background": "Game/Capitulos/Cap_1/Cenas/Cena_2.jpg",
+      "dialog": {
+        "text": "Teste de texto5"
+      }
     }
   }
   
