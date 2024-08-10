@@ -1,0 +1,33 @@
+{
+    "Cena_1": {
+      "background": "Game/Capitulos/Cap_1/Cenas/Cena_1.jpg",
+      "dialog": {
+        "text": "Teste de texto capitulo 2"
+      }
+    },
+    "Cena_2": {
+      "background": "Game/Capitulos/Cap_1/Cenas/Cena_2.jpg",
+      "dialog": {
+        "text": "Teste de texto2 capitulos 2"
+      }
+    },
+    "Cena_3": {
+      "background": "Game/Capitulos/Cap_1/Cenas/Cena_2.jpg",
+      "dialog": {
+        "text": "Conta-se que por volta do ano 250 A.C, na China antiga, um príncipe da região norte do país, estava às vésperas de ser coroado imperador, mas, de acordo com a lei, ele deveria se casar. Sabendo disso, ele resolveu fazer uma “disputa” entre as moças da corte ou quem quer que se achasse digna de sua proposta.\n."
+      }
+    },
+    "Cena_4": {
+      "background": "Game/Capitulos/Cap_1/Cenas/Cena_1.jpg",
+      "dialog": {
+        "text": "Teste de texto4"
+      }
+    },
+    "Cena_5":{
+      "background": "Game/Capitulos/Cap_1/Cenas/Cena_2.jpg",
+      "dialog": {
+        "text": "Teste de texto5"
+      }
+    }
+  }
+  

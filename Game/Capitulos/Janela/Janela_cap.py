@@ -4,26 +4,21 @@ class Janela_cap:
     def __init__(self, tamanho, titulo):
         self.tamanho = tamanho
         self.titulo = titulo
+        self.fundo = None
+        self.texto_dialogo = ""
+        self.fonte = pygame.font.Font(None, 36)
+        self.cor_texto = (38, 182, 137)
         self.tela = pygame.display.set_mode(tamanho)
         pygame.display.set_caption(titulo)
-        self.fundo = None
 
-    def definir_fundo(self, imagem):
-        """Carrega e redimensiona a imagem de fundo para se ajustar ao tamanho da tela."""
-        if imagem:
-            try:
-                # Carrega a imagem de fundo
-                self.fundo = pygame.image.load(imagem)
-                # Obtém o tamanho da tela
-                largura, altura = self.tela.get_size()
-                # Redimensiona a imagem para o tamanho da tela
-                self.fundo = pygame.transform.scale(self.fundo, (largura, altura))
-            except pygame.error as e:
-                print(f"Erro ao carregar a imagem de fundo: {e}")
-                self.fundo = None
+    def definir_texto_dialogo(self, texto):
+        """Define o texto do diálogo e atualiza a tela."""
+        self.texto_dialogo = texto
+        self.atualizar()
 
     def atualizar(self):
-        # Limpa a tela com uma cor de fundo (opcional)
+        """Atualiza a tela com a caixa de diálogo e o fundo."""
+        # Limpa a tela com uma cor de fundo
         self.tela.fill((0, 0, 0))  # Cor preta para teste
 
         # Desenha o fundo na tela
@@ -31,28 +26,47 @@ class Janela_cap:
             self.tela.blit(self.fundo, (0, 0))
         
         # Desenha a caixa de diálogo
-        if hasattr(self, 'texto_dialogo'):
-            self.caixa_dialogo(self.texto_dialogo)
+        if self.texto_dialogo:
+            self.desenhar_caixa_dialogo(self.texto_dialogo)
         
         # Atualiza a tela
-        pygame.display.flip()
+        pygame.display.flip() 
 
+    def quebrar_texto(self, texto, largura_max):
+        """Quebra o texto em várias linhas para se ajustar à largura máxima."""
+        palavras = texto.split(" ")
+        linhas = []
+        linha_atual = ""
+        for palavra in palavras:
+            nova_linha = f"{linha_atual} {palavra}".strip()
+            if self.fonte.size(nova_linha)[0] <= largura_max:
+                linha_atual = nova_linha
+            else:
+                if linha_atual:
+                    linhas.append(linha_atual)
+                linha_atual = palavra
+        if linha_atual:
+            linhas.append(linha_atual)
+        return linhas
 
-    def caixa_dialogo(self, texto):
-        """Desenha uma caixa de diálogo na tela."""
-        x = 20
-        y = 20
-        latura = 500
-        altura = 100
+    def desenhar_caixa_dialogo(self, texto):
+        """Desenha uma caixa de diálogo com o texto fornecido."""
+        largura, altura = self.tela.get_size()
+        largura_max = largura - 20
+        altura_max = 100
 
         # Desenha a caixa de diálogo
-        pygame.draw.rect(self.tela, (255, 255, 255), (x, y, latura, altura))
-        # Desenha o texto na caixa de diálogo
-        fonte = pygame.font.SysFont(None, 24)
-        texto = fonte.render(texto, True, (0, 0, 0))
-        self.tela.blit(texto, (x + 10, y + 10))
+        pygame.draw.rect(self.tela, (255, 255, 255), (10, altura - altura_max - 10, largura_max, altura_max))
         
-
+        # Quebra o texto em linhas
+        linhas = self.quebrar_texto(texto, largura_max)
+        
+        # Renderiza e desenha cada linha do texto
+        y = altura - altura_max + 10
+        for linha in linhas:
+            texto_surface = self.fonte.render(linha, True, self.cor_texto)
+            self.tela.blit(texto_surface, (15, y))
+            y += self.fonte.get_linesize()
 
     def fechar(self):
         """Fecha o Pygame e encerra o programa."""
