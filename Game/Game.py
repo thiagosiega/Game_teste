@@ -6,6 +6,7 @@ from GUI.janela import Janela
 from GUI.Botoes import Botoes
 from Configurações.main import Configuracoes
 from Inicio.main import Inicio
+from Pecados.main import Pecados
 
 pygame.init()
 pygame.font.init()
@@ -41,7 +42,7 @@ fundo = pygame.transform.scale(fundo, tamanho)
 
 # Definindo estados do jogo
 estado_atual = "Menu"
-tex_btn = ["Inicio", "Configurações", "Sair"]
+tex_btn = ["Inicio", "Configurações", "Pecados", "Sair"]
 
 def comand(text):
     global estado_atual
@@ -107,6 +108,10 @@ try:
             pygame.quit()
             exit()
 
+        elif estado_atual == "Pecados":
+            pecados = Pecados(janela.get_surface())
+            pecados.executar()
+            estado_atual = "Menu"
         else:
             print("Estado inválido")
             estado_atual = "Menu"

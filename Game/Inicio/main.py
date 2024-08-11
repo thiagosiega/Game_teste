@@ -16,7 +16,7 @@ class Inicio:
         self.input_ativo = False
         self.nome_jogador = ""
         self.arquivo_salvo = None
-        self.img_fundo = pygame.image.load("Game/Fundo.jpg")
+        self.img_fundo = pygame.image.load("Game/Fundo1.png")
 
         # Carregar configurações de save
         self.carregar_save()

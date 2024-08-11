@@ -1,0 +1,31 @@
+{
+    "Pecados": [
+        {
+            "ID": 1,
+            "Infor": {
+                "Status": true,
+                "Name": "Exemplo1",
+                "Description": "Um exemplo do pecado",
+                "Image": "Game/Fundo1.png"
+            }
+        },
+        {
+            "ID": 2,
+            "Infor": {
+                "Status": false,
+                "Name": "Exemplo2",
+                "Description": "Outro exemplo do pecado",
+                "Image": "Game/Fundo.jpg"
+            }
+        },
+        {
+            "ID": 3,
+            "Infor": {
+                "Status": false,
+                "Name": "Exemplo3",
+                "Description": "Mais um exemplo do pecado",
+                "Image": "Game/Fundo1.png"
+            }
+        }
+    ]
+}
