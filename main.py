@@ -41,6 +41,15 @@ def instalar_dependencias():
     except subprocess.CalledProcessError:
         messagebox.showerror('Instalação', 'Erro ao instalar dependências')
 
+def verificar_versao_game():
+    file = "Game/V.txt"
+    if os.path.exists(file):
+        with open(file, 'r') as f:
+            versao = f.read()
+            return versao
+    else:
+        return None
+
 def main():
     verificar_python()
     if python_instalado:
