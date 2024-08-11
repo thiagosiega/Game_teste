@@ -16,6 +16,7 @@ class Inicio:
         self.input_ativo = False
         self.nome_jogador = ""
         self.arquivo_salvo = None
+        self.img_fundo = pygame.image.load("Game/Fundo.jpg")
 
         # Carregar configurações de save
         self.carregar_save()
@@ -166,7 +167,8 @@ class Inicio:
         clock = pygame.time.Clock()  # Controle de taxa de atualização
         running = True
         while running:
-            self.janela.fill(self.cor_fundo)
+            fundo = pygame.transform.scale(self.img_fundo, (self.largura, self.altura))
+            self.janela.blit(fundo, (0, 0))
             self.desenhar_botoes()
             if not self.lidar_com_eventos():
                 break

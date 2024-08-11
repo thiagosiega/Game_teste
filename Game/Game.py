@@ -35,6 +35,10 @@ else:
 # Cria a janela
 janela = Janela(tamanho, "Game")
 
+#imagem do fundo
+fundo = pygame.image.load("Game/Fundo.jpg")
+fundo = pygame.transform.scale(fundo, tamanho)
+
 # Definindo estados do jogo
 estado_atual = "Menu"
 tex_btn = ["Inicio", "Configurações", "Sair"]
@@ -84,9 +88,8 @@ try:
                 pygame.quit()
                 exit()
 
-        # Verifica o estado atual e desenha a tela correspondente
         if estado_atual == "Menu":
-            janela.get_surface().fill((0, 0, 0))  # Usar a superfície da janela
+            janela.get_surface().blit(fundo, (0, 0))
             desenhar_menu()
 
         elif estado_atual == "Configurações":
@@ -108,6 +111,7 @@ try:
             print("Estado inválido")
             estado_atual = "Menu"
 
+       
         # Atualiza a tela
         pygame.display.update()
 

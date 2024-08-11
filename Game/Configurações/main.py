@@ -10,6 +10,7 @@ class Configuracoes:
         self.cor_fundo = (0, 0, 0)
         self.cor_texto = (255, 255, 255)
         self.cor_selecionada = (0, 255, 0)
+        self.cor_botao = (0, 0, 255)  # Cor azul para o fundo do botão
         self.fonte = pygame.font.SysFont(None, 24)
         self.opcoes = {
             "Tela": ["800x600", "1024x768", "1280x720", "1920x1080", "Full Screen"],
@@ -18,35 +19,52 @@ class Configuracoes:
         }
         self.estado_expansao = {key: False for key in self.opcoes}
         self.selecao_opcao = {key: None for key in self.opcoes}
+        self.fundo = pygame.image.load("Game/Fundo.jpg")
+
+    def desenhar_fundo(self):
+        self.fundo = pygame.transform.scale(self.fundo, (self.largura, self.altura))
+        self.janela.blit(self.fundo, (0, 0))
 
     def desenhar_opcoes(self):
-        self.janela.fill(self.cor_fundo)
-        pos_x = 100
-        pos_y = 100
+        pos_x = self.largura // 10
+        pos_y = self.altura // 10
+        
         for opcao, valores in self.opcoes.items():
-            texto_opcao = self.fonte.render(opcao, True, self.cor_texto)
-            self.janela.blit(texto_opcao, (pos_x, pos_y))
-
-            if self.estado_expansao[opcao]:
-                for i, valor in enumerate(valores):
-                    cor = self.cor_selecionada if self.selecao_opcao[opcao] == valor else self.cor_texto
-                    texto_valor = self.fonte.render(f"- {valor}", True, cor)
-                    self.janela.blit(texto_valor, (pos_x + 20, pos_y + (i + 1) * 30))
-                pos_y += len(valores) * 30
-
+            self._desenhar_texto(opcao, pos_x, pos_y)
             pos_y += 40
 
-        # Desenha os botões (Voltar, Salvar, Carregar)
-        self.desenhar_botoes()
-        pygame.display.update()
+            if self.estado_expansao[opcao]:
+                pos_y = self._desenhar_opcoes_expandidas(opcao, valores, pos_x, pos_y)
+
+    def _desenhar_opcoes_expandidas(self, opcao, valores, pos_x, pos_y):
+        for valor in valores:
+            cor = self.cor_selecionada if valor == self.selecao_opcao.get(opcao) else self.cor_texto
+            self._desenhar_texto(valor, pos_x + 20, pos_y, cor)
+            pos_y += 30
+        return pos_y + 10
+
+    def _desenhar_texto(self, texto, x, y, cor=None):
+        cor = cor or self.cor_texto
+        renderizado = self.fonte.render(texto, True, cor)
+        self.janela.blit(renderizado, (x, y))
 
     def desenhar_botoes(self):
         btns_text = ["Voltar", "Salvar", "Carregar"]
-        pos_x = 400
+        largura_botao = 120
+        altura_botao = 40
+        margem_x = (self.largura - largura_botao) // 2
+        pos_y = self.altura - (3 * altura_botao + 40)
+
         for i, text in enumerate(btns_text):
-            texto = self.fonte.render(text, True, self.cor_texto)
-            pos_y = 100 + 60 * i
-            self.janela.blit(texto, (pos_x, pos_y))
+            pos_y_atual = pos_y + i * (altura_botao + 10)
+            self._desenhar_botao(text, margem_x, pos_y_atual, largura_botao, altura_botao)
+
+    def _desenhar_botao(self, texto, x, y, largura, altura):
+        retangulo = pygame.Rect(x, y, largura, altura)
+        pygame.draw.rect(self.janela, self.cor_botao, retangulo)
+        texto_renderizado = self.fonte.render(texto, True, self.cor_texto)
+        texto_rect = texto_renderizado.get_rect(center=retangulo.center)
+        self.janela.blit(texto_renderizado, texto_rect)
 
     def salvar_opcoes(self):
         FILE_SAVE = "Game/Saive/Config.json"
@@ -64,11 +82,7 @@ class Configuracoes:
             messagebox.showerror("Erro", f"Erro ao salvar as opções: {e}")
             return
         
-        self.janela.fill(self.cor_fundo)
-        label = self.fonte.render("Opções salvas com sucesso!", True, self.cor_texto)
-        self.janela.blit(label, (100, 500))
-        pygame.display.update()
-        pygame.time.wait(3000)
+        self._exibir_mensagem("Opções salvas com sucesso!")
 
     def carregar_configuracoes(self):
         FILE_SAVE = "Game/Saive/Config.json"
@@ -85,12 +99,15 @@ class Configuracoes:
             if key in self.opcoes:
                 self.selecao_opcao[key] = dados[key]
         
-        self.janela.fill(self.cor_fundo)
         tela = dados.get("Tela", "Não definido")
         nivel = dados.get("Nivel", "Não definido")
         fps = dados.get("FPS", "Não definido")
+        mensagem = f"Tela: {tela} \nNivel: {nivel} \nFPS: {fps}"
+        self._exibir_mensagem(mensagem)
 
-        label = self.fonte.render(f"Tela: {tela} \nNivel: {nivel} \nFPS: {fps}", True, self.cor_texto)
+    def _exibir_mensagem(self, mensagem):
+        self.janela.fill(self.cor_fundo)
+        label = self.fonte.render(mensagem, True, self.cor_texto)
         self.janela.blit(label, (100, 500))
         pygame.display.update()
         pygame.time.wait(3000)
@@ -101,36 +118,49 @@ class Configuracoes:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        running = False
-
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
-                    pos_y = 100
-                    for opcao in self.opcoes.keys():
-                        rect = pygame.Rect(100, pos_y, 200, 30)
-                        if rect.collidepoint(mouse_x, mouse_y):
-                            self.estado_expansao[opcao] = not self.estado_expansao[opcao]
-                        if self.estado_expansao[opcao]:
-                            for i, valor in enumerate(self.opcoes[opcao]):
-                                rect_sub = pygame.Rect(120, pos_y + (i + 1) * 30, 200, 30)
-                                if rect_sub.collidepoint(mouse_x, mouse_y):
-                                    self.selecao_opcao[opcao] = valor
-                            pos_y += len(self.opcoes[opcao]) * 30
-                        pos_y += 40
-
-                    rect_back = pygame.Rect(400, 100, 100, 30)  # Botão Voltar
-                    if rect_back.collidepoint(mouse_x, mouse_y):
+                    if self._verificar_botao(mouse_x, mouse_y, "Voltar"):
                         running = False
-                    
-                    rect_save = pygame.Rect(400, 160, 100, 30)  # Botão Salvar
-                    if rect_save.collidepoint(mouse_x, mouse_y):
+                    elif self._verificar_botao(mouse_x, mouse_y, "Salvar"):
                         self.salvar_opcoes()
-                    
-                    rect_load = pygame.Rect(400, 220, 100, 30)  # Botão Carregar
-                    if rect_load.collidepoint(mouse_x, mouse_y):
+                    elif self._verificar_botao(mouse_x, mouse_y, "Carregar"):
                         self.carregar_configuracoes()
+                    else:
+                        self._verificar_opcao(mouse_x, mouse_y)
 
+            self.desenhar_fundo()
             self.desenhar_opcoes()
+            self.desenhar_botoes()
+            pygame.display.update()
+
+    def _verificar_botao(self, mouse_x, mouse_y, texto_botao):
+        largura_botao = 120
+        altura_botao = 40
+        margem_x = (self.largura - largura_botao) // 2
+        pos_y = self.altura - (3 * altura_botao + 40)
+        btns_text = ["Voltar", "Salvar", "Carregar"]
+        for i, text in enumerate(btns_text):
+            if text == texto_botao:
+                pos_y_atual = pos_y + i * (altura_botao + 10)
+                return pygame.Rect(margem_x, pos_y_atual, largura_botao, altura_botao).collidepoint(mouse_x, mouse_y)
+        return False
+
+    def _verificar_opcao(self, mouse_x, mouse_y):
+        pos_x = self.largura // 10
+        pos_y = self.altura // 10
+        for opcao, valores in self.opcoes.items():
+            rect = pygame.Rect(pos_x, pos_y, 200, 30)
+            if rect.collidepoint(mouse_x, mouse_y):
+                self.estado_expansao[opcao] = not self.estado_expansao[opcao]
+            
+            if self.estado_expansao[opcao]:
+                for valor in valores:
+                    rect_sub = pygame.Rect(pos_x + 20, pos_y + valores.index(valor) * 30 + 40, 200, 30)
+                    if rect_sub.collidepoint(mouse_x, mouse_y):
+                        self.selecao_opcao[opcao] = valor
+                pos_y += len(valores) * 30
+            
+            pos_y += 40
