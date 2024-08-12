@@ -110,7 +110,6 @@ def main():
             else:
                 subprocess.run(['python', 'Game/Game.py'])
         elif versao is None:
-            messagebox.showerror('Infor', 'Nova versão não disponível')
             subprocess.run(['python', 'Game/Game.py'])
     else:
         messagebox.showerror('Erro', 'Python não está instalado. Por favor, instale o Python.')
