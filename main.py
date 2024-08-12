@@ -65,7 +65,11 @@ def atualizar_game(url_zip, pasta_extraida, pasta_game):
         with zipfile.ZipFile(arquivo_zip, 'r') as zip_ref:
             zip_ref.extractall(pasta_extraida)
         
-        # Substitui a pasta Game
+        # Verifica se a pasta de destino já existe e a remove
+        if os.path.exists(pasta_game):
+            remover_diretorio(pasta_game)
+        
+        # Move a nova pasta para o destino
         caminho_game_extraido = os.path.join(pasta_extraida, 'Game_teste-main', 'Game')
         if os.path.exists(caminho_game_extraido):
             shutil.move(caminho_game_extraido, pasta_game)
