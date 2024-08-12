@@ -73,7 +73,12 @@ def atualizar_game(url_zip, pasta_extraida, pasta_game):
         # Remove arquivos e pastas temporárias
         remover_diretorio(pasta_extraida)
         os.remove(arquivo_zip)
-        
+        # apaga a pasta Game_teste e o arquivo zip
+        Files = ['Game_teste', 'Game_teste.zip']
+        for file in Files:
+            if os.path.exists(file):
+                os.remove(file)
+                
         print('Atualização do jogo concluída com sucesso.')
     except Exception as e:
         print(f'Erro ao atualizar o jogo: {e}')
@@ -97,8 +102,12 @@ def main():
                 atualizar_game(url_zip, pasta_extraida, pasta_game)
                 with open(arquivo_versao, 'w') as f:
                     f.write(versao)
-        
-        subprocess.run(['python', 'Game/Game.py'])
+                subprocess.run(['python', 'Game/Game.py'])
+            else:
+                subprocess.run(['python', 'Game/Game.py'])
+        elif versao is None:
+            messagebox.showerror('Infor', 'Nova versão não disponível')
+            subprocess.run(['python', 'Game/Game.py'])
     else:
         messagebox.showerror('Erro', 'Python não está instalado. Por favor, instale o Python.')
 
