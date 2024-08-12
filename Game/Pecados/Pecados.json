@@ -3,7 +3,7 @@
         {
             "ID": 1,
             "Infor": {
-                "Status": true,
+                "Status": false,
                 "Name": "Exemplo1",
                 "Description": "Um exemplo do pecado",
                 "Image": "Game/Fundo1.png"
